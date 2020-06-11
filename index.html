@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32</title>
+</head>
+
+<body>
+    <H1>SUWEBYA ESP32</H1>
+    <div id="display">    </div>
+    <div id="display2">    </div>
+
+    <button type="reset" onclick="activar('1')">encender</button>
+    <button type="reset" onclick="activar('0')">Apagar</button>
+    <canvas id="myChart"></canvas>
+   
+    <script src="js/ComMqtt.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script type="text/javascript">
+   
+        var clienteId = 'client_id_' + Math.floor((Math.random() * 1000000) + 1);
+        client = new Paho.MQTT.Client("ioticos.org", 8094, clienteId);
+        client.onConnectionLost= onConnectionLost;
+        client.onMessageArrived= onMessageArrived;
+        //-----------------------------------------------------------------------------------------//
+        
+        //------------------------------------------------------------------------------------------//
+        var n=0;
+        var options ={
+            useSSL:true,
+            userName:"QM5KymfuouvynyE",
+            password:"PoBcEGPqj2orwIA",
+            onSuccess:onConnect,
+            onFailure:doFail
+        }
+        client.connect(options);
+       
+        
+
+        function onConnect(){
+            console.log("conexion Exitosa");
+            client.subscribe("hJ2I5VCKfQZfvjC/output");
+            client.subscribe("hJ2I5VCKfQZfvjC/salida");
+        }
+        function onMessageArrived(message){
+            //console.log("se recibe mensaje:"+message.payloadString);
+            $("#display").html(message.payloadString);
+            var datos=[message.payloadString];
+            datos[n]=[message.payloadString];
+            if(n % 2 == 0) {
+            $("#display2").html(datos[n]);}else{
+                $("#display").html(datos[n])   
+            }
+            n++;
+            console.log(datos);
+           
+        }
+        
+        function doFail(e){
+            console.log(e);
+
+        }
+        function onConnectionLost(responseObject){
+            if(responseObject.errorCode !==0){
+                console.log("onConnectionLost:"+responseObject.errorMessage);
+            }
+        }
+        function activar(value){
+            console.log(value);
+            message= new Paho.MQTT.Message(value);
+            message.destinationName = "hJ2I5VCKfQZfvjC/input";
+            client.send(message);            
+            
+        }
+
+    </script>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        datasets: [{
+            label: 'My First dataset',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [0, 10, 5, 2, 20, 12, 21]
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
+    </script>
+</body>
+
+</html>
